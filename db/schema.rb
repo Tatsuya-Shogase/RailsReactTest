@@ -26,7 +26,6 @@ ActiveRecord::Schema.define(version: 2020_08_23_120219) do
     t.text "text", null: false
     t.boolean "visible"
     t.integer "category_id", null: false
-    t.boolean "admin"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["category_id"], name: "index_posts_on_category_id"

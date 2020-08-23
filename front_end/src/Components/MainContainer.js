@@ -24,6 +24,10 @@ class MainContainer extends React.Component {
 
     componentDidMount = () => {
         this.loginStatus()
+        this.init()
+    }
+
+    init = () => {
         axios.get(`${process.env.REACT_APP_API_URL}categories`)
         .then((results) => {
             this.setState({categories: results.data})
@@ -115,7 +119,6 @@ class MainContainer extends React.Component {
                 mail: mail,
                 subject: subject,
                 text: text,
-                admin: false,
             },
             {withCredentials: true}
         )
@@ -158,6 +161,7 @@ class MainContainer extends React.Component {
             if(response.data.status === 401){
                 this.setState({login_error_msg: response.data.message})
             }else if(response.data.user.admin){
+                this.init()
                 this.setState({
                     admin: response.data.user.admin,
                     login_error_msg: '',

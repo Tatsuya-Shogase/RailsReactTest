@@ -40,12 +40,10 @@ module Bb
             origins 'http://localhost:3000'
             resource '*',
             :headers => :any,
-            :expose => ['access-token', 'expiry', 'token-type', 'uid', 'client'],
             :methods => [:get, :post, :patch, :delete, :options],
             :credentials => true
         end
     end
-    # config.middleware.use ActionDispatch::Cookies
     config.middleware.use ActionDispatch::Session::CookieStore
   end
 end

@@ -8,7 +8,6 @@ class CreatePosts < ActiveRecord::Migration[6.0]
       t.text :text, null: false
       t.boolean :visible
       t.references :category, null: false, foreign_key: true
-      t.boolean :admin
 
       t.timestamps
     end

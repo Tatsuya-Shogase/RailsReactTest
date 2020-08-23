@@ -24,7 +24,6 @@ class PostsController < ApplicationController
             text: params[:text],
             visible: true,
             category_id: params[:category_id],
-            admin: params[:admin],
         )
         render json: @post
     end
