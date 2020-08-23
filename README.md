@@ -1,6 +1,6 @@
 # README
 
-##【掲示板アプリ】
+## 【掲示板アプリ】
 ・登場人物：投稿者(匿名)、管理者  
 ・掲示板機能  
 　-「カテゴリ」があり、上記ユーザーは「カテゴリ」ごとににテキストを投稿できる  
@@ -17,7 +17,7 @@
 　-非表示になった投稿も含め、「カテゴリ」ごとにすべての投稿を確認できる  
 
 
-##DB構成  
+## DB構成  
 Users  
   username, password, admin  
 
@@ -28,7 +28,7 @@ Posts
   session_id, name, mail, subject, text, visible, category_id(foreign_key)  
 
 
-##環境  
+## 環境  
 RailsをAPIでインストールし、front_endディレクトリにReactをインストールしています。  
 DBはsqliteを使用。  
 migrationとseedsファイルは作成していますが、念のためsqliteファイルもpushしています。  
