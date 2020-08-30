@@ -58,10 +58,10 @@ class AdminFormContainer extends React.Component {
                                 className='mb-3'
                             />
                             <Button variant='outline-info' onClick={this.hundleSignIn}>サインイン</Button>
-                            {this.props.login_error_msg === '' ? (
+                            {this.props.message === '' ? (
                                 null
                             ) : (
-                                <p><small className='text-danger'>{this.props.login_error_msg}</small></p>
+                                <p><small className='text-danger'>{this.props.message}</small></p>
                             )}
                         </Dropdown.Menu>
                     </Dropdown>

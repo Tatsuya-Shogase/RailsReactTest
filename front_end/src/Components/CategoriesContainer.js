@@ -8,7 +8,8 @@ class CategoriesContainer extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            category: ''
+            category: '',
+            message: '',
         }
     }
 
@@ -16,9 +17,16 @@ class CategoriesContainer extends React.Component {
         this.setState({category: e.target.value})
     }
 
-    hundleSubmit = () => {
-      this.props.createCategory(this.state.category)
-      this.setState({category:''})
+    hundleCreate = () => {
+        if(this.state.category === ''){
+            this.setState({message: 'カテゴリ名は入力必須です。'})
+        }else{
+            this.props.createCategory(this.state.category)
+            this.setState({
+                category:'',
+                message: ''
+            })
+        }
     }
 
     hundleAuthOpen = () => {
@@ -38,7 +46,7 @@ class CategoriesContainer extends React.Component {
             <Card className='text-left'>
                 <Card.Header>カテゴリ</Card.Header>
                 <Card.Body>
-                    {this.props.admin ? (
+                    {this.props.admin && (
                         <div className='mb-3'>
                             <InputGroup>
                                 <FormControl
@@ -48,12 +56,16 @@ class CategoriesContainer extends React.Component {
                                     onChange={ e => this.onChangetext(e)}
                                 />
                                 <InputGroup.Append>
-                                    <Button variant='info' onClick={this.hundleSubmit}>追加</Button>
+                                    <Button variant='info' onClick={this.hundleCreate}>追加</Button>
                                 </InputGroup.Append>
                             </InputGroup>
                         </div>
-                    ):(
-                        null
+                    )}
+                    {this.state.message && (
+                        <p className='text-danger'>{this.state.message}</p>
+                    )}
+                    {this.props.messages.create && (
+                        <p className='text-danger'>{this.props.messages.create}</p>
                     )}
                     {this.props.categoryData.map((data) => {
                         return(
@@ -64,6 +76,9 @@ class CategoriesContainer extends React.Component {
                                 updateCategory={this.props.updateCategory}
                                 clickCategory={this.props.clickCategory}
                                 admin={this.props.admin}
+                                message={this.props.messages.update[0] === data.id && (
+                                    this.props.messages.update[1]
+                                )}
                             />
                         )
                     })}

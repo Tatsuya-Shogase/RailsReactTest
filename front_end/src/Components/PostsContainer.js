@@ -13,6 +13,12 @@ class PostsContainer extends React.Component {
             subject: '',
             text: '',
             error_msg: '',
+            messages: {
+                name: '',
+                mail: '',
+                subject: '',
+                text: '',
+            }
         }
     }
 
@@ -22,13 +28,27 @@ class PostsContainer extends React.Component {
     }
 
     hundlePost = () => {
+        let error_check = true
+        let messages = {...this.state.messages}
+        const regex = /[\w\-._]+@[\w\-._]+\.[A-Za-z]+/
+
         if(this.state.text === ''){
-            this.setState({error_msg:'※本文は入力必須です。'})
+            messages.text = '※本文は入力必須です。'
+            error_check = false
         }else{
-            this.setState({error_msg:''})
+            messages.text = ''
+        }
+        if (this.state.mail !== '' && !regex.test(this.state.mail)){
+            messages.mail = '※正しい形式でメールアドレスを入力してください'
+            error_check = false
+        }else{
+            messages.mail = ''
+        }
+        if(error_check){
             this.props.createPost(this.state.name, this.state.mail, this.state.subject, this.state.text)
             this.setState({subject:'', text:'', })
         }
+        this.setState({messages: messages})
     }
 
 
@@ -53,6 +73,9 @@ class PostsContainer extends React.Component {
                         onChange={ e => this.onChangetext(e)}
                         className='mb-3'
                     />
+                    {this.state.messages.mail && (
+                        <p className='text-danger'>{this.state.messages.mail}</p>
+                    )}
                     <FormControl
                         name='subject'
                         type='text'
@@ -69,12 +92,13 @@ class PostsContainer extends React.Component {
                         placeholder='本文'
                         onChange={ e => this.onChangetext(e)}
                     />
-                    {this.state.error_msg === '' ? (
-                        null
-                    ) : (
-                        <p className='text-danger'>{this.state.error_msg}</p>
+                    {this.state.messages.text && (
+                        <p className='text-danger'>{this.state.messages.text}</p>
                     )}
                     <Button className='my-3' onClick={this.hundlePost}>書き込む</Button>
+                    {this.props.messages.create && (
+                        <p className='text-danger'>{this.props.messages.create}</p>
+                    )}
                     {this.props.postData.map((data) => {
                         return(
                             <ViewPost
@@ -83,6 +107,9 @@ class PostsContainer extends React.Component {
                                 sessionId={this.props.sessionId}
                                 oninvisible={this.props.invisiblePost}
                                 admin={this.props.admin}
+                                message={this.props.messages.update[0] === data.id && (
+                                    this.props.messages.update[1]
+                                )}
                             />
                         )
                     })}

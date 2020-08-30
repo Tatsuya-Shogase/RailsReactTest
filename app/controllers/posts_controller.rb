@@ -10,7 +10,14 @@ class PostsController < ApplicationController
     end
 
     def index
-        @posts = Post.where(:category_id => params[:category_id]).all
+        if admin?
+            @posts = Post.where(:category_id => params[:category_id]).all
+        else
+            @posts = Post.where(
+                :category_id => params[:category_id],
+                :visible => true
+            ).all
+        end
         @session_id = Digest::MD5.hexdigest(cookies[:session_id])
         render json: {posts: @posts, session_id: @session_id}
     end
@@ -25,7 +32,11 @@ class PostsController < ApplicationController
             visible: true,
             category_id: params[:category_id],
         )
-        render json: @post
+        if @post.valid?
+            render json: @post
+        else
+            render status: 400, json: { status: 400, message: 'Bad Request' }
+        end
     end
 
     def update

@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::API
     include ActionController::Cookies
-    helper_method :login!, :logged_in?, :check_admin, :current_user, :authorized_user?, :logout!
+    helper_method :login!, :logged_in?, :admin, :check_admin, :current_user, :authorized_user?, :logout!
 
     def login!
         session[:user_id] = @user.id
@@ -10,16 +10,21 @@ class ApplicationController < ActionController::API
         !!session[:user_id]
     end
 
-    def check_admin
+    def admin?
         if logged_in?
             @admin = User.find(session[:user_id])
             unless @admin.admin
-                head :unauthorized
                 return false
             end
+            return true
         else
-            head :unauthorized
             return false
+        end
+    end
+
+    def check_admin
+        if !admin?
+            head :unauthorized
         end
     end
 

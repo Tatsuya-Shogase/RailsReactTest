@@ -18,26 +18,43 @@ class MainContainer extends React.Component {
             current_category_id: 0,
             current_category_name: '',
             admin: false,
-            login_error_msg: '',
+            messages: {
+                login: '',
+                categories: {
+                    create: '',
+                    update: ['', ''],
+                },
+                posts: {
+                    create: '',
+                    update: ['', ''],
+                },
+            },
         }
     }
 
     componentDidMount = () => {
         this.loginStatus()
-        this.init()
+        this.init(true)
     }
 
-    init = () => {
-        axios.get(`${process.env.REACT_APP_API_URL}categories`)
+    init = (posts_reload) => {
+        axios.get(
+            `${process.env.REACT_APP_API_URL}categories`,
+            {withCredentials: true}
+        )
         .then((results) => {
             this.setState({categories: results.data})
-            const current_category_id = this.state.categories[0]['id']
-            const current_category_name = this.state.categories[0]['name']
-            this.setState({
-                current_category_id: current_category_id,
-                current_category_name: current_category_name,
-            })
-            this.showPost(current_category_id)
+            if(this.state.current_category_id === 0){
+                const current_category_id = this.state.categories[0]['id']
+                const current_category_name = this.state.categories[0]['name']
+                this.setState({
+                    current_category_id: current_category_id,
+                    current_category_name: current_category_name,
+                })
+            }
+            if(posts_reload){
+                this.showPost(this.state.current_category_id)
+            }
         })
         .catch((data) =>{
             console.log(data)
@@ -53,6 +70,7 @@ class MainContainer extends React.Component {
     }
 
     createCategory = (category) => {
+        let messages = {...this.state.messages}
         axios.post(
             `${process.env.REACT_APP_API_URL}categories`,
             {category: category},
@@ -60,14 +78,21 @@ class MainContainer extends React.Component {
         )
         .then((response) => {
             const newData = update(this.state.categories, {$push:[response.data]})
-            this.setState({categories: newData})
+            messages.categories.create = ''
+            this.setState({
+                categories: newData,
+                messages: messages,
+            })
         })
         .catch((data) =>{
             console.log(data)
+            messages.categories.create = 'サーバーエラーにより登録できませんでした。'
+            this.setState({messages: messages})
         })
     }
 
     deleteCategory = (id) => {
+        let messages = {...this.state.messages}
         axios.delete(
             `${process.env.REACT_APP_API_URL}categories/${id}`,
             {withCredentials: true}
@@ -76,13 +101,25 @@ class MainContainer extends React.Component {
             const categoryIndex = this.state.categories.findIndex(x => x.id === id)
             const deletedCategories = update(this.state.categories, {$splice: [[categoryIndex, 1]]})
             this.setState({categories: deletedCategories})
+            messages.categories.update = ['', '']
+            if(id === this.state.current_category_id){
+                this.setState({
+                    current_category_id: 0,
+                    current_category_name: '',
+                    messages: messages,
+                })
+                this.init(true)
+            }
         })
         .catch((data) =>{
             console.log(data)
+            messages.categories.update = [id, 'サーバーエラーにより削除できませんでした。']
+            this.setState({messages: messages})
         })
     }
 
     updateCategory = (id, category) => {
+        let messages = {...this.state.messages}
         axios.patch(
             `${process.env.REACT_APP_API_URL}categories/${id}`,
             {category: category},
@@ -91,10 +128,16 @@ class MainContainer extends React.Component {
         .then((response) => {
             const categoryIndex = this.state.categories.findIndex(x => x.id === id)
             const categories = update(this.state.categories, {[categoryIndex]: {$set: response.data}})
-            this.setState({categories: categories})
+            messages.categories.update = ['', '']
+            this.setState({
+                categories: categories,
+                messages: messages,
+            })
         })
         .catch((data) =>{
             console.log(data)
+            messages.categories.update = [id, 'サーバーエラーにより変更できませんでした。']
+            this.setState({messages: messages})
         })
     }
 
@@ -112,6 +155,7 @@ class MainContainer extends React.Component {
     }
 
     createPost = (name, mail, subject, text) => {
+        let messages = {...this.state.messages}
         axios.post(
             `${process.env.REACT_APP_API_URL}categories/${this.state.current_category_id}/posts`,
             {
@@ -124,14 +168,24 @@ class MainContainer extends React.Component {
         )
         .then((response) => {
             const newData = update(this.state.posts, {$push:[response.data]})
-            this.setState({posts: newData})
+            messages.posts.create = ''
+            this.setState({
+                posts: newData,
+                messages: messages,
+            })
+            if(this.state.admin){
+                this.init(false)
+            }
         })
         .catch((data) =>{
             console.log(data)
+            messages.posts.create = 'サーバーエラーにより書き込みできませんでした。'
+            this.setState({messages: messages})
         })
     }
 
     invisiblePost = (id) => {
+        let messages = {...this.state.messages}
         axios.patch(
             `${process.env.REACT_APP_API_URL}categories/${this.state.current_category_id}/posts/${id}`,
             {withCredentials: true}
@@ -139,10 +193,13 @@ class MainContainer extends React.Component {
         .then((response) => {
             const postIndex = this.state.posts.findIndex(x => x.id === id)
             const posts = update(this.state.posts, {[postIndex]: {$set: response.data}})
+            messages.posts.update = ['', '']
             this.setState({posts: posts})
         })
         .catch((data) =>{
             console.log(data)
+            messages.posts.update = [id, 'サーバーエラーにより非表示にできませんでした。']
+            this.setState({messages: messages})
         })
     }
 
@@ -158,19 +215,21 @@ class MainContainer extends React.Component {
             {withCredentials: true}
         )
         .then((response) => {
+            let messages = {...this.state.messages}
             if(response.data.status === 401){
-                this.setState({login_error_msg: response.data.message})
+                messages.login = response.data.message
+                this.setState({messages: messages})
             }else if(response.data.user.admin){
-                this.init()
+                messages.login = ''
                 this.setState({
                     admin: response.data.user.admin,
-                    login_error_msg: '',
+                    messages: messages,
                 })
+                this.init(true)
             }else{
+                messages.login = '管理者権限があるユーザーでサインインしてください。'
                 this.signOut()
-                this.setState({
-                    login_error_msg: '管理者権限があるユーザーでサインインしてください。',
-                })
+                this.setState({messages: messages})
             }
         })
         .catch((data) =>{
@@ -185,6 +244,7 @@ class MainContainer extends React.Component {
         )
         .then((response) => {
             this.setState({admin: false})
+            this.init(true)
         })
         .catch((data) => {
             console.log(data)
@@ -193,7 +253,7 @@ class MainContainer extends React.Component {
 
     loginStatus = () => {
         axios.get(
-            'http://localhost:3001/logged_in',
+            `${process.env.REACT_APP_API_URL}logged_in`,
             {withCredentials: true}
         )
         .then((response) => {
@@ -217,7 +277,7 @@ class MainContainer extends React.Component {
                         signIn={this.signIn}
                         signOut={this.signOut}
                         admin={this.state.admin}
-                        login_error_msg={this.state.login_error_msg}
+                        message={this.state.messages.login}
                     />
                 </Navbar>
                 <Container>
@@ -230,6 +290,7 @@ class MainContainer extends React.Component {
                                 updateCategory={this.updateCategory}
                                 clickCategory={this.clickCategory}
                                 admin={this.state.admin}
+                                messages={this.state.messages.categories}
                             />
                         </Col>
                         <Col>
@@ -240,6 +301,7 @@ class MainContainer extends React.Component {
                                 admin={this.state.admin}
                                 createPost={this.createPost}
                                 current_category_name={this.state.current_category_name}
+                                messages={this.state.messages.posts}
                             />
                         </Col>
                     </Row>

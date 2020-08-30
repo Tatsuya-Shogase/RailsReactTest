@@ -9,6 +9,7 @@ class ViewCategory extends React.Component {
         this.state = {
             newCategoryName: this.props.data.name,
             visible: false,
+            message:'',
         }
     }
 
@@ -27,12 +28,20 @@ class ViewCategory extends React.Component {
     }
 
     handleUpdate = () => {
-        this.props.updateCategory(this.props.data.id, this.state.newCategoryName)
-        this.handleToggleVisible()
+        if(this.state.newCategoryName === ''){
+            this.setState({message: 'カテゴリ名を入力してください。'})
+        }else{
+            this.props.updateCategory(this.props.data.id, this.state.newCategoryName)
+            this.setState({message: ''})
+            this.handleToggleVisible()
+        }
     }
 
     handleCancel = () => {
-        this.setState({newCategoryName: this.props.data.name})
+        this.setState({
+            newCategoryName: this.props.data.name,
+            message: '',
+        })
         this.handleToggleVisible()
     }
 
@@ -77,6 +86,10 @@ class ViewCategory extends React.Component {
                             </InputGroup>
                         </div>
                     )}
+                    {this.state.message && (
+                        <p className='text-danger'>{this.state.message}</p>
+                    )}
+                    <span className='text-danger'>{this.props.message}</span>
                 </div>
             )
         }else{
