@@ -2,7 +2,7 @@ class CategoriesController < ApplicationController
     before_action :check_admin, except: [:index]
 
     def store_posts_count()
-        if @category.is_a?(Object)
+        if @category.is_a?(Object) && admin?
             if @category.instance_of?(Category)
                 @category.posts_count = Post.where(:category_id => @category.id).count
             else
@@ -23,8 +23,8 @@ class CategoriesController < ApplicationController
 
     def create
         @category = Category.create(name: params[:category])
-        store_posts_count()
         if @category.valid?
+            store_posts_count()
             render json: @category, methods: :posts_count
         else
             render status: 400, json: { status: 400, message: 'Bad Request' }
@@ -34,8 +34,8 @@ class CategoriesController < ApplicationController
     def update
         @category = Category.find(params[:id])
         @category.update(name: params[:category])
-        store_posts_count()
         if @category.valid?
+            store_posts_count()
             render json: @category, methods: :posts_count
         else
             render status: 400, json: { status: 400, message: 'Bad Request' }
